@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>麦门精算师 · 精算报告</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(160deg, #fffdf7 0%, #fff8ec 40%, #fdf6ff 100%);
+    color: #1a1a1a; padding: 32px 20px 56px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+
+  /* Header */
+  .hero {
+    background: #fff; border-radius: 20px; padding: 28px 30px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 12px 32px -12px rgba(214,35,0,.14);
+    border: 1px solid rgba(214,35,0,.08); position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content:""; position:absolute; inset:0 auto 0 0; width:5px;
+    background: linear-gradient(180deg,#ffbc0d,#db0007);
+  }
+  .brandline { display:flex; align-items:center; gap:10px; font-size:13px; color:#8a8a8a; letter-spacing:.3px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:#16a34a; box-shadow:0 0 0 3px rgba(22,163,74,.15); }
+  h1 { font-size:26px; font-weight:800; margin:10px 0 4px; letter-spacing:-.5px; }
+  h1 span { background:linear-gradient(90deg,#ffbc0d,#db0007); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .meta { font-size:13.5px; color:#6b6b6b; }
+  .meta b { color:#1a1a1a; font-weight:600; }
+
+  /* Saving hero number */
+  .saving {
+    margin-top:22px; display:flex; flex-wrap:wrap; align-items:flex-end; gap:26px;
+    padding-top:20px; border-top:1px dashed #eee;
+  }
+  .big { font-size:44px; font-weight:800; color:#db0007; letter-spacing:-1.5px; line-height:1; }
+  .big small { font-size:17px; font-weight:600; margin-left:4px; letter-spacing:0; }
+  .sub { font-size:13px; color:#8a8a8a; }
+  .strike { text-decoration:line-through; color:#b0b0b0; }
+  .pill {
+    display:inline-block; padding:4px 12px; border-radius:999px; font-size:12px; font-weight:700;
+    background:rgba(219,0,7,.08); color:#db0007;
+  }
+
+  /* Section */
+  h2 { font-size:15px; font-weight:700; margin:34px 0 14px; display:flex; align-items:center; gap:8px; }
+  h2::before { content:""; width:3px; height:15px; border-radius:2px; background:linear-gradient(180deg,#ffbc0d,#db0007); }
+
+  /* Plan cards */
+  .plan {
+    background:#fff; border-radius:16px; padding:18px 20px; margin-bottom:12px;
+    border:1px solid #f0f0f0; box-shadow:0 1px 2px rgba(0,0,0,.03);
+    display:flex; justify-content:space-between; align-items:center; gap:16px;
+  }
+  .plan.best { border-color:rgba(219,0,7,.25); box-shadow:0 8px 26px -14px rgba(219,0,7,.3); }
+  .plan .name { font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px; }
+  .tag { font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:#fff4d6; color:#a26800; }
+  .plan .desc { font-size:12.5px; color:#8a8a8a; margin-top:3px; }
+  .plan .price { text-align:right; white-space:nowrap; }
+  .plan .price .now { font-size:21px; font-weight:800; color:#db0007; }
+  .plan .price .save { font-size:12px; color:#16a34a; font-weight:600; }
+
+  /* Table */
+  table { width:100%; border-collapse:separate; border-spacing:0; background:#fff;
+    border-radius:14px; overflow:hidden; border:1px solid #f0f0f0; font-size:13px;
+    box-shadow:0 1px 2px rgba(0,0,0,.03); }
+  th { background:#fafafa; text-align:left; padding:11px 14px; font-weight:600; color:#6b6b6b; font-size:12px; }
+  td { padding:11px 14px; border-top:1px solid #f5f5f5; }
+  td.num { font-variant-numeric: tabular-nums; }
+  .red { color:#db0007; font-weight:700; }
+
+  /* Briefing */
+  .brief {
+    background:#1c1c1e; color:#f2f2f2; border-radius:16px; padding:20px 22px;
+    font-size:13.5px; line-height:1.9; box-shadow:0 12px 30px -16px rgba(0,0,0,.5);
+  }
+  .brief .t { color:#ffbc0d; font-weight:700; }
+  .brief .k { color:#7dd3a0; }
+
+  /* Note */
+  .note { font-size:12px; color:#9a9a9a; margin-top:26px; padding-top:16px; border-top:1px solid #eee; }
+  .note b { color:#6b6b6b; }
+  @media (max-width:560px) { h1{font-size:21px} .big{font-size:34px} .plan{flex-direction:column;align-items:flex-start} .plan .price{text-align:left} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="brandline"><span class="dot"></span> 麦门精算师 · 精算报告</div>
+    <h1>这一单，<span>省了 ¥19.30</span></h1>
+    <div class="meta">
+      <b>门店</b> 麦当劳广州华夏路餐厅（高德置地春商场 B2，距你 90m） ·
+      <b>场景</b> 到店自取 · <b>数据时间</b> 2026-10-09 20:15
+    </div>
+    <div class="saving">
+      <div>
+        <div class="big">¥29.70<small>/ 三件</small></div>
+        <div class="sub">原价 <span class="strike">¥49.00</span> · 实付 ¥29.70</div>
+      </div>
+      <div style="padding-bottom:6px"><span class="pill">立省 39.4%</span></div>
+      <div style="padding-bottom:6px" class="sub">自动领券 3 张 · 揪出临期券 2 张</div>
+    </div>
+  </div>
+
+  <h2>精算结果（按实付升序）</h2>
+
+  <div class="plan best">
+    <div>
+      <div class="name">🥇 9.9 元中杯冰美式 <span class="tag">最省 48%</span></div>
+      <div class="desc">用「9.9 元中杯冰美式」券 · 凭证商品码 507411 · 有效期至 10-15</div>
+    </div>
+    <div class="price"><div class="now">¥9.90</div><div class="save">立省 ¥9.10</div></div>
+  </div>
+
+  <div class="plan best">
+    <div>
+      <div class="name">🥈 麦旋风任选 <span class="tag">今日到期</span></div>
+      <div class="desc">用「麦旋风任选」券 · 凭证商品码 9900014239 · 23:59 前有效</div>
+    </div>
+    <div class="price"><div class="now">¥9.90</div><div class="save">立省 ¥4.10</div></div>
+  </div>
+
+  <div class="plan best">
+    <div>
+      <div class="name">🥉 薯薯任选 <span class="tag">今日到期</span></div>
+      <div class="desc">用「薯薯任选」券 · 凭证商品码 9900016370 · 23:59 前有效</div>
+    </div>
+    <div class="price"><div class="now">¥9.90</div><div class="save">立省 ¥6.10</div></div>
+  </div>
+
+  <div class="plan">
+    <div>
+      <div class="name">板烧鸡腿堡（无券对照）</div>
+      <div class="desc">原价直购 · 商品码 1406 · 另注：四件套菜单价 ¥28 属「随单购麦金卡」优惠，普通计价为 ¥57</div>
+    </div>
+    <div class="price"><div class="now" style="color:#1a1a1a">¥23.50</div><div class="save" style="color:#b0b0b0">无优惠</div></div>
+  </div>
+
+  <h2>券池明细（query-store-coupons）</h2>
+  <table>
+    <thead>
+      <tr><th>券名</th><th>券后价</th><th>原价</th><th>立省</th><th>凭证商品码</th><th>有效期</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>麦旋风任选</td><td class="num red">¥9.90</td><td class="num">¥14.00</td><td class="num">¥4.10</td><td>9900014239</td><td>10-09 23:59 止</td></tr>
+      <tr><td>薯薯任选</td><td class="num red">¥9.90</td><td class="num">¥16.00</td><td class="num">¥6.10</td><td>9900016370</td><td>10-09 23:59 止</td></tr>
+      <tr><td>9.9 元中杯冰美式</td><td class="num red">¥9.90</td><td class="num">¥19.00</td><td class="num">¥9.10</td><td>507411</td><td>10-15 止</td></tr>
+    </tbody>
+  </table>
+
+  <h2>每日麦麦播报（内置模块）</h2>
+  <div class="brief">
+    <div><span class="t">☀️ 麦麦早报 · 10月9日 周五</span></div>
+    <div>🎉 今日活动：韩式风味蘸酱上新——鸡薯双全盒 <span class="k">15.9 元起</span>、蘸酱炸鸡 <span class="k">11.9 元起</span></div>
+    <div>🖤 麦当劳 × PEACEMINUSONE：任意消费 +<span class="k">39.9</span> 元得 GD 联名复古棒球帽</div>
+    <div>🍔 龙焰鸡腿堡三件套 <span class="k">26.9 元起</span>（麦金卡四件套 29 元起）</div>
+    <div>🎫 已帮你新领 3 张券；<b>2 张券今晚 23:59 过期</b>，抓紧用</div>
+    <div>🏆 积分 32.9 分（累计 302.7，已过期 261.8 —— 别再让它躺过期了）</div>
+    <div>💡 明日预告：00:00 起「麦金喜抽奖·积分霸王餐」可预约，免费龙焰/麦辣鸡腿堡</div>
+  </div>
+
+  <div class="note">
+    <b>数据来源</b> 麦当劳中国 MCP Server（mcp.mcd.cn）实时返回，未做任何加工。<br>
+    <b>声明</b> 本页为「麦门精算师」参赛作品演示，非麦当劳官方产品；餐品信息与价格以麦当劳官方渠道为准。价格均为实测结果，未执行任何下单操作。
+  </div>
+
+</div>
+</body>
+</html>

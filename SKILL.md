@@ -50,9 +50,12 @@ read_when:
 
 ### A3. 领券清仓
 1. `auto-bind-coupons` 一键领光所有可领券（这是本 Skill 的标志性动作，必做）
-2. `query-my-coupons` 拉取卡包全量券
-3. `query-store-coupons` 拉取当前门店可用券
-4. 合并去重，建立「可用券池」：记录每张券的门槛、面额、适用品类、有效期
+2. `query-my-coupons` 盘点卡包全量券（看有什么、什么时候过期）
+3. **`query-store-coupons`（传 storeCode/orderType/beType）拿到可用券的 `couponId` + `couponCode` + 券对应的凭证商品码 `products[].productCode`** ⚠️ 缺了这一步算不出券后价
+4. 建立「可用券池」：每张券记录 券名 / couponId / couponCode / 有效期 / **凭证商品码** / 券后价
+
+> ⚠️ **红线**：`query-my-coupons` 不含 couponId/couponCode，不能直接用于计价。
+> 计价时 items 必须传**券的凭证商品码**（来自 `query-store-coupons`），传普通菜单码会返回 `600012 当前优惠券不可用`。
 
 ### A4. 拉取菜单
 - `query-meals`（storeCode + beCode）取当前可售餐品
@@ -61,10 +64,11 @@ read_when:
 
 ### A5. 组合试算
 按 `references/combo-strategy.md` 的策略生成 ≤8 个候选组合，逐个 `calculate-price`（带上可用券）：
-- 组合生成优先级：① 必吃项的套餐形态 ② 券门槛凑单形态 ③ 单品直购形态
+- 组合生成优先级：① 券的凭证商品码直购（券后价最低） ② 必吃项的套餐形态 ③ 券门槛凑单形态 ④ 单品直购形态
 - 每个候选记录：商品列表、用券方案、原价、优惠额、实付
-- **入参要点**（实测）：items 用 `productCode` 字段；套餐须先 `query-meal-detail` 拿 `roundList` 子项结构；返回价格单位为「分」
+- **入参要点**（实测）：items 用 `productCode`；用券时传**券的凭证商品码**；套餐须先 `query-meal-detail` 拿 `roundList` 子项结构；返回价格单位为「分」
 - **返回解析**：工具返回为「说明文档 + `## Original Response` 内嵌 JSON」混合文本，定位标记后提取 JSON，勿按 markdown 标题解析
+- 遇到 `600012 当前优惠券不可用` → 说明商品码与券不匹配，改用该券的凭证商品码重试一次，仍失败则从候选中剔除并记录
 
 ### A6. 输出省钱报告
 按实付升序输出 Top 3，固定格式：

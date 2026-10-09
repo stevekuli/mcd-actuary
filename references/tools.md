@@ -79,12 +79,22 @@
 
 ## ⚡ 实测要点（2026-10-09 真实链路验证，务必遵守）
 
-1. **返回格式是「说明文档 + 内嵌 JSON」混合文本**：`content[0].text` 前半是字段说明，真正的数据在 `## Original Response` 之后的 JSON 里。解析时定位该标记，再用 `raw_decode` 提取 JSON；**不要按 markdown 标题解析**。领券/卡包类工具则直接返回 markdown 列表，按正则提取即可。
-2. **`calculate-price` 的 items 用 `productCode` 字段**（不是 `code`），`quantity` 必填 ≥1；**套餐必须带 `roundList` 子项**（先 `query-meal-detail` 拿套餐 round 结构再组装）。
-3. **价格单位是「分」**：`price: 3450` = ¥34.50，展示时除以 100。
-4. **实际在线 35 个工具**（比文档多 `query-promotions`、`query-survey-coupon`；派对日期工具实际名为 `query-party-store-date`）。
-5. `query-nearby-stores` 到店场景：`beType=1` + `searchType=2` + `city` + `keyword`；返回 `storeCode`、`beCode`、营业状态、预约时段。
-6. `query-meals` 返回 `data.meals` 为 **code → 餐品详情的映射表**（含 `currentPrice`/`originalPrice`/`discountType`），`data.categories` 为分类索引。
-7. `calculate-price` 返回 `takeWayList`（堂食/外带选项），下单时需要选择一个 takeWay。
-8. 实测真实数据锚点（广州华夏路店 storeCode=1400205）：板烧鸡腿堡单品 ¥23.50（productCode=1406）、板烧鸡腿堡三件套 ¥34.50（productCode=9900005462）。
+1. **⚠️ 券必须配「凭证商品码」使用（最关键的坑）**：
+   - `query-my-coupons` 只返回券名/价格/有效期，**不含 couponId 和 couponCode**，无法直接用于计价
+   - 必须调 `query-store-coupons`（传 storeCode + orderType + beType）拿到三件套：`couponId` + `couponCode` + **`products[].productCode`（券对应的凭证商品码）**
+   - 计价时 items 里传**券的凭证商品码**，而不是菜单里的普通商品码；否则返回 `600012 当前优惠券不可用！`
+   - 实测正例：麦旋风任选券 → productCode `9900014239`，¥14.00 → ¥9.90 ✅
+   - 实测反例：用普通经典麦旋风码 `9900008754` 配买一送一券 → 600012 失败 ❌
+2. **返回格式是「说明文档 + 内嵌 JSON」混合文本**：`content[0].text` 前半是字段说明，真正的数据在 `## Original Response` 之后的 JSON 里。解析时定位该标记，再用 `raw_decode` 提取 JSON；**不要按 markdown 标题解析**。领券/卡包类工具则直接返回 markdown 列表，按正则提取即可。
+3. **`calculate-price` 的 items 用 `productCode` 字段**（不是 `code`），`quantity` 必填 ≥1；**套餐必须带 `roundList` 子项**（先 `query-meal-detail` 拿套餐 round 结构再组装）。
+4. **价格单位是「分」**：`price: 990` = ¥9.90，展示时除以 100。
+5. **实际在线 35 个工具**（比文档多 `query-promotions`、`query-survey-coupon`；派对日期工具实际名为 `query-party-store-date`）。
+6. `query-nearby-stores` 到店场景：`beType=1` + `searchType=2` + `city` + `keyword`；返回 `storeCode`、`beCode`、营业状态、预约时段。
+7. `query-meals` 返回 `data.meals` 为 **code → 餐品详情的映射表**（含 `currentPrice`/`originalPrice`/`discountType`，部分餐品无 `discountType` 字段，读取要用 `.get()`），`data.categories` 为分类索引。
+8. `calculate-price` 返回 `takeWayList`（堂食/外带选项），下单时需要选择一个 takeWay。
+9. **随单购优惠不体现在 calculate-price**：如「板烧鸡腿堡四件套」菜单价 ¥28 是随单购麦金卡优惠价，直接计价返回原价 ¥57，需在报告中注明。
+10. 实测真实数据锚点（广州华夏路店 storeCode=1400205，2026-10-09）：
+    - 板烧鸡腿堡 ¥23.50（`1406`）、板烧四件套 ¥57.00（`9900000890`，菜单优惠价 ¥28）
+    - 麦旋风任选券 ¥14.00→¥9.90、薯薯任选券 ¥16.00→¥9.90、9.9 元冰美式券 ¥19.00→¥9.90
+
 
