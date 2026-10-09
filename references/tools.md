@@ -74,3 +74,17 @@
 |---|---|---|
 | 401 | Token 无效/过期/缺失 | 引导重新申请 Token 并更新配置 |
 | 429 | 超过 600 次/分钟 | 降频、减少候选数量 |
+
+---
+
+## ⚡ 实测要点（2026-10-09 真实链路验证，务必遵守）
+
+1. **返回格式是「说明文档 + 内嵌 JSON」混合文本**：`content[0].text` 前半是字段说明，真正的数据在 `## Original Response` 之后的 JSON 里。解析时定位该标记，再用 `raw_decode` 提取 JSON；**不要按 markdown 标题解析**。领券/卡包类工具则直接返回 markdown 列表，按正则提取即可。
+2. **`calculate-price` 的 items 用 `productCode` 字段**（不是 `code`），`quantity` 必填 ≥1；**套餐必须带 `roundList` 子项**（先 `query-meal-detail` 拿套餐 round 结构再组装）。
+3. **价格单位是「分」**：`price: 3450` = ¥34.50，展示时除以 100。
+4. **实际在线 35 个工具**（比文档多 `query-promotions`、`query-survey-coupon`；派对日期工具实际名为 `query-party-store-date`）。
+5. `query-nearby-stores` 到店场景：`beType=1` + `searchType=2` + `city` + `keyword`；返回 `storeCode`、`beCode`、营业状态、预约时段。
+6. `query-meals` 返回 `data.meals` 为 **code → 餐品详情的映射表**（含 `currentPrice`/`originalPrice`/`discountType`），`data.categories` 为分类索引。
+7. `calculate-price` 返回 `takeWayList`（堂食/外带选项），下单时需要选择一个 takeWay。
+8. 实测真实数据锚点（广州华夏路店 storeCode=1400205）：板烧鸡腿堡单品 ¥23.50（productCode=1406）、板烧鸡腿堡三件套 ¥34.50（productCode=9900005462）。
+

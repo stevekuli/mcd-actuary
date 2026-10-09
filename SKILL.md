@@ -63,6 +63,8 @@ read_when:
 按 `references/combo-strategy.md` 的策略生成 ≤8 个候选组合，逐个 `calculate-price`（带上可用券）：
 - 组合生成优先级：① 必吃项的套餐形态 ② 券门槛凑单形态 ③ 单品直购形态
 - 每个候选记录：商品列表、用券方案、原价、优惠额、实付
+- **入参要点**（实测）：items 用 `productCode` 字段；套餐须先 `query-meal-detail` 拿 `roundList` 子项结构；返回价格单位为「分」
+- **返回解析**：工具返回为「说明文档 + `## Original Response` 内嵌 JSON」混合文本，定位标记后提取 JSON，勿按 markdown 标题解析
 
 ### A6. 输出省钱报告
 按实付升序输出 Top 3，固定格式：
